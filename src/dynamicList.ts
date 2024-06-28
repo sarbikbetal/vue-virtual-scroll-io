@@ -1,4 +1,4 @@
-import { ref, Ref, toValue, watch } from "vue"
+import { ref, Ref, toValue, watch, readonly } from "vue"
 
 /** Arbitrary size of a single batch */
 const GROUP_SIZE = 20
@@ -57,7 +57,6 @@ export default function useDynamicHeightList(
   const fullHeight = ref(0)
 
   function handleIntersection(scrollTop: number, clientHeight: number) {
-    // console.log(scrollTop, clientHeight)
     const range: number[] = []
     range[0] = calculateIndexFromHeight(sizeList, scrollTop)
     range[1] = calculateIndexFromHeight(sizeList, scrollTop + clientHeight)
@@ -74,21 +73,39 @@ export default function useDynamicHeightList(
       diff,
       range,
       toValue(listIndices.value),
-      // sizeList.slice(sizeList.length - 8, sizeList.length - 1),
-      topHeight.value
+      topHeight.value,
+      fullHeight.value,
+      sizeList
     )
   }
 
   watch(
-    [() => listIndices.value[0], wrapper],
+    [listIndices, wrapper, rowCount],
     () => {
+      console.log("Overflow")
       const visibleIndices = listIndices.value
       // Set it to 1 if ref="topMarker" element is visible
       const offset = visibleIndices[0] ? 1 : 0
 
       // Keep recording the height of the elements
       // TODO: Account for the spacer elements
-      while (sizeList.length < visibleIndices[1] + offset && wrapper.value) {
+      // while (sizeList.length < visibleIndices[1] + offset && wrapper.value) {
+      //   console.log("overflow2")
+      //   const nthChildIndex = sizeList.length - (visibleIndices[0] + offset)
+      //   const nthChild = wrapper.value?.children[nthChildIndex]
+
+      //   // if (nthChild.id !== "virtual-list-bottom-marker") {
+      //   const size = sizeList[sizeList.length - 1] + nthChild.clientHeight
+      //   sizeList.push(size)
+      //   // }
+      // }
+
+      for (
+        let index = sizeList.length;
+        index < visibleIndices[1] + offset && wrapper.value;
+        index++
+      ) {
+        console.log("overflow2")
         const nthChildIndex = sizeList.length - (visibleIndices[0] + offset)
         const nthChild = wrapper.value?.children[nthChildIndex]
 
@@ -102,6 +119,7 @@ export default function useDynamicHeightList(
   )
 
   function reset() {
+    console.trace("reset")
     topHeight.value = 0
     listIndices.value = [0, Math.min(GROUP_SIZE, rowCount.value)]
     sizeList.splice(1)
@@ -109,10 +127,9 @@ export default function useDynamicHeightList(
 
   return {
     handleIntersection,
-    topHeight,
-    fullHeight,
-    listIndices,
+    topHeight: readonly(topHeight),
+    fullHeight: readonly(fullHeight),
+    listIndices: readonly(listIndices),
     reset,
-    sizeList,
   }
 }

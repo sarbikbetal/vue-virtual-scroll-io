@@ -1,7 +1,9 @@
 <template>
   <div>
-    {{ listIndices }}
-    Top: {{ topHeight }} Full: {{ fullHeight }} sizeList: {{ sizeList.length }}
+    <span>Total: {{ data.length }}&nbsp;&nbsp;</span>
+    <span>Rendering: {{ listIndices }}&nbsp;&nbsp;</span>
+    <span>Top: {{ topHeight }}px&nbsp;&nbsp;</span>
+    <span>Full: {{ fullHeight }}px&nbsp;&nbsp;</span>
   </div>
   <div ref="root" class="virtual-list-container">
     <div
@@ -31,11 +33,13 @@
         v-if="listIndices[1] != data.length"
         ref="bottomMarker"
         class="flex justify-center flex-grow"
-        style="min-height: 5px"
+        style="min-height: 5px; background-color: red"
       >
         <slot name="loader" />
       </div>
     </div>
+
+    <!-- to be deleted -->
     <TransitionGroup
       v-else-if="data.length"
       tag="div"
@@ -105,16 +109,10 @@ const topMarker = ref<Element | null>(null)
 
 const rowCount = computed(() => data.value.length)
 
-const {
-  handleIntersection,
-  topHeight,
-  fullHeight,
-  listIndices,
-  reset,
-  sizeList,
-} = props.variableHeight
-  ? useDynamicHeightList(rowCount, wrapper)
-  : useFixedHeightList(rowCount, wrapper)
+const { handleIntersection, topHeight, fullHeight, listIndices, reset } =
+  props.variableHeight
+    ? useDynamicHeightList(rowCount, wrapper)
+    : useFixedHeightList(rowCount, wrapper)
 
 // We dynamically change these css property to give the illusion of scroll
 const wrapperStyle = computed(() => ({
@@ -122,12 +120,12 @@ const wrapperStyle = computed(() => ({
 }))
 
 const topStyle = computed(() => ({
-  'max-height': `${topHeight.value}px`,
-  'min-height': `${topHeight.value}px`,
+  "max-height": `${topHeight.value}px`,
+  "min-height": `${topHeight.value}px`,
 }))
 
-watch(topStyle, ()=>{
-  console.log("top-height", topMarker.value?.clientHeight )
+watch(topStyle, () => {
+  console.log("top-height", topMarker.value?.clientHeight)
 })
 
 // Virtualize the container if there are more than 20 elements
@@ -178,6 +176,7 @@ async function init() {
   // listIndices.value = [0, Math.min(GROUP_SIZE, data.value.length)]
   // topStyle.height = 'auto'
   // wrapperStyle.height = 'auto'
+  // reset()
   iObserver = new IntersectionObserver(observationCallback, {
     root: root.value,
     threshold: [0],
@@ -188,11 +187,16 @@ async function init() {
 
 onMounted(init)
 
-watch(data, init)
-watch([isVirtualised, data], (cVal) => {
+watch(data, () => {
+  iObserver.disconnect()
+  init()
+  handleIntersection(root.value?.scrollTop!, root.value?.clientHeight!)
+})
+
+watch([isVirtualised, data], (value, oldValue) => {
   // Reset the list when the mode is set to virtualised
   // or when the length of list smaller than the last one
-  if (cVal || lastListLength > data.value.length) {
+  if (value[0] !== oldValue[0] || lastListLength > data.value.length) {
     reset()
   }
 
