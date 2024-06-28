@@ -1,4 +1,8 @@
 <template>
+  <div>
+    {{ listIndices }}
+    Top: {{ topHeight }} Full: {{ fullHeight }} sizeList: {{ sizeList.length }}
+  </div>
   <div ref="root" class="virtual-list-container">
     <div
       v-if="isVirtualised"
@@ -7,7 +11,12 @@
       :style="wrapperStyle"
     >
       <!-- This element is only rendered when the virtual list does not start from 0th element -->
-      <div v-if="listIndices[0]" ref="topMarker" class="flex-shrink-0" :style="topStyle">
+      <div
+        v-if="listIndices[0]"
+        ref="topMarker"
+        class="flex-shrink-0 virtual-list-top-marker"
+        :style="topStyle"
+      >
         Top Buffer
       </div>
       <div
@@ -22,11 +31,16 @@
         v-if="listIndices[1] != data.length"
         ref="bottomMarker"
         class="flex justify-center flex-grow"
+        style="min-height: 5px"
       >
         <slot name="loader" />
       </div>
     </div>
-    <TransitionGroup v-else-if="data.length" tag="div" :name="hasListTransition ? 'fade' : ''">
+    <TransitionGroup
+      v-else-if="data.length"
+      tag="div"
+      :name="hasListTransition ? 'fade' : ''"
+    >
       <div
         v-for="(item, idx) in data"
         :key="item?.[dataKey]"
@@ -91,7 +105,14 @@ const topMarker = ref<Element | null>(null)
 
 const rowCount = computed(() => data.value.length)
 
-const { handleIntersection, topHeight, fullHeight, listIndices, reset } = props.variableHeight
+const {
+  handleIntersection,
+  topHeight,
+  fullHeight,
+  listIndices,
+  reset,
+  sizeList,
+} = props.variableHeight
   ? useDynamicHeightList(rowCount, wrapper)
   : useFixedHeightList(rowCount, wrapper)
 
@@ -101,16 +122,23 @@ const wrapperStyle = computed(() => ({
 }))
 
 const topStyle = computed(() => ({
-  height: `${topHeight.value}px`,
+  'max-height': `${topHeight.value}px`,
+  'min-height': `${topHeight.value}px`,
 }))
+
+watch(topStyle, ()=>{
+  console.log("top-height", topMarker.value?.clientHeight )
+})
 
 // Virtualize the container if there are more than 20 elements
 // for varible-height, always virtualize.
 // const isVirtualised = computed(() => data.value?.length > 20)
-const isVirtualised = ref(false)
+const isVirtualised = ref(true)
 
 /** Slice of the data that is actually rendered on the screen */
-const pool = computed(() => data.value.slice(listIndices.value[0], listIndices.value[1]))
+const pool = computed(() =>
+  data.value.slice(listIndices.value[0], listIndices.value[1])
+)
 
 let lastListLength = data.value.length
 
@@ -121,14 +149,20 @@ function observeThreshold(observer: IntersectionObserver) {
   if (topMarker.value) observer.observe(topMarker.value)
 }
 
-function observationCallback(entries: IntersectionObserverEntry[], observer: IntersectionObserver) {
+function observationCallback(
+  entries: IntersectionObserverEntry[],
+  observer: IntersectionObserver
+) {
   /**
    * Checks if any of the visible observed elements are
    * intersecting, if yes run the calculations. Something
    * to note here is that either or any of `topMarker` and
    * `bottomMarker` might not be visible, so we do this check.
    */
-  const intersecting = entries.reduce((acc, elem) => acc || elem.isIntersecting, false)
+  const intersecting = entries.reduce(
+    (acc, elem) => acc || elem.isIntersecting,
+    false
+  )
   if (intersecting) {
     observer.disconnect()
     handleIntersection(root.value?.scrollTop!, root.value?.clientHeight!)
@@ -140,7 +174,7 @@ function observationCallback(entries: IntersectionObserverEntry[], observer: Int
  * Initializes/resets the internal state of the component
  */
 async function init() {
-  // listSize.splice(1)
+  // sizeList.splice(1)
   // listIndices.value = [0, Math.min(GROUP_SIZE, data.value.length)]
   // topStyle.height = 'auto'
   // wrapperStyle.height = 'auto'
@@ -178,7 +212,11 @@ watch([isVirtualised, data], (cVal) => {
 }
 
 .virtual-list-item {
-  overflow: hidden;
+  /* overflow: hidden; */
+}
+
+.virtual-list-top-marker {
+  /* transition: height 150ms; */
 }
 
 .footer {
@@ -204,6 +242,6 @@ watch([isVirtualised, data], (cVal) => {
 }
 
 .fade-enter-active {
-  transition-delay: calc(50ms * var(--index));
+  /* transition-delay: calc(50ms * var(--index)); */
 }
 </style>
