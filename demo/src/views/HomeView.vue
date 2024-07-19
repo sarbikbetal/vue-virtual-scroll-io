@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import VirtualList from '../../../src/VirtualList.vue'
+import { VirtualScroller } from 'vue-virtual-scroll-io'
+// import { VirtualScroller } from '../../../src/index'
+
 
 const logArray = ref([])
 
@@ -45,7 +47,7 @@ getTexts(40)
     </div>
 
     <div class="flex flex-col flex-grow px-4 overflow-y-auto text-new-gray-600">
-      <VirtualList :data="logArray" :data-key="'id'" variable-height>
+      <VirtualScroller :data="logArray" :data-key="'id'" variable-height>
         <template #default="{ item }">
           <div class="py-6 border-b">
             <p class="text-base text-gray-700">#{{ item.id }} {{ item.title }}</p>
@@ -53,7 +55,7 @@ getTexts(40)
             <p class="font-mono text-xs">{{ item.description }}</p>
           </div>
         </template>
-      </VirtualList>
+      </VirtualScroller>
     </div>
   </div>
 </template>

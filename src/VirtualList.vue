@@ -187,9 +187,9 @@ async function init() {
 
 onMounted(init)
 
-watch(data, () => {
+watch(data, async() => {
   iObserver.disconnect()
-  init()
+  await init()
   handleIntersection(root.value?.scrollTop!, root.value?.clientHeight!)
 })
 

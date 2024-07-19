@@ -24,7 +24,7 @@ function calculateIndexFromHeight(arr: number[], height: number) {
   }
 
   mid = Math.floor((high + low) / 2)
-  if (height <= arr[mid]) return mid - 1
+  if (height <= arr[mid]) return Math.max(0, mid - 1) // we don't want -1 as an index
   return mid
 }
 

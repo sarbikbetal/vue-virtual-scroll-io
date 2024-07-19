@@ -1,18 +1,39 @@
 {
   "name": "vue-virtual-scroll-io",
+  "version": "0.1.0",
+  "description": "",
   "author": {
     "name": "Sarbik Betal",
     "email": "sarbikb55@gmail.com"
   },
-  "version": "0.1.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/vue-virtual-scroll-io.umd.cjs",
+  "module": "./dist/vue-virtual-scroll-io.js",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-virtual-scroll-io.js",
+      "require": "./dist/vue-virtual-scroll-io.umd.cjs"
+    },
+    "./dist/style.css": "./dist/style.css"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vite build"
   },
   "keywords": [],
   "license": "MIT",
   "peerDependencies": {
     "vue": "^3.2.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "typescript": "^5.2.2",
+    "vite": "^5.3.1",
+    "vite-plugin-dts": "^3.9.1",
+    "vue-tsc": "^2.0.21"
   }
 }
