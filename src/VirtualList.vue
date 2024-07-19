@@ -116,7 +116,7 @@ const { handleIntersection, topHeight, fullHeight, listIndices, reset } =
 
 // We dynamically change these css property to give the illusion of scroll
 const wrapperStyle = computed(() => ({
-  height: `${fullHeight.value}px`,
+  height: fullHeight.value ? `${fullHeight.value}px` : "auto",
 }))
 
 const topStyle = computed(() => ({
