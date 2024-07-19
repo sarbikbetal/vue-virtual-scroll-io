@@ -185,9 +185,12 @@ async function init() {
   observeThreshold(iObserver)
 }
 
-onMounted(init)
+onMounted(async () => {
+  await nextTick()
+  init()
+})
 
-watch(data, async() => {
+watch(data, async () => {
   iObserver.disconnect()
   await init()
   handleIntersection(root.value?.scrollTop!, root.value?.clientHeight!)
