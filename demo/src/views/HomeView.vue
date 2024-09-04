@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-// import { VirtualScroller } from 'vue-virtual-scroll-io'
-import { VirtualScroller } from '../../../dist/vue-virtual-scroll-io'
-
+import { VirtualScroller } from 'vue-virtual-scroll-io'
 
 const logArray = ref([])
 

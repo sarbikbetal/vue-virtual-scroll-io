@@ -6,17 +6,12 @@
     <span>Full: {{ fullHeight }}px&nbsp;&nbsp;</span>
   </div>
   <div ref="root" class="virtual-list-container">
-    <div
-      v-if="isVirtualised"
-      ref="wrapper"
-      class="flex flex-col virtual-list-scroll"
-      :style="wrapperStyle"
-    >
+    <div ref="wrapper" class="virtual-list-scroll" :style="wrapperStyle">
       <!-- This element is only rendered when the virtual list does not start from 0th element -->
       <div
         v-if="listIndices[0]"
         ref="topMarker"
-        class="flex-shrink-0 virtual-list-top-marker"
+        class="virtual-list-top-marker"
         :style="topStyle"
       >
         Top Buffer
@@ -24,7 +19,7 @@
       <div
         v-for="(item, idx) in pool"
         :key="item?.[dataKey]"
-        class="flex-shrink-0 virtual-list-item"
+        class="virtual-list-item"
       >
         <slot :item="item" :index="idx + listIndices[0]"></slot>
       </div>
@@ -32,28 +27,12 @@
       <div
         v-if="listIndices[1] != data.length"
         ref="bottomMarker"
-        class="flex justify-center flex-grow"
-        style="min-height: 5px; background-color: red"
+        class="vitual-list-bottom-marker"
       >
         <slot name="loader" />
       </div>
     </div>
 
-    <!-- to be deleted -->
-    <TransitionGroup
-      v-else-if="data.length"
-      tag="div"
-      :name="hasListTransition ? 'fade' : ''"
-    >
-      <div
-        v-for="(item, idx) in data"
-        :key="item?.[dataKey]"
-        class="flex-shrink-0 virtual-list-item"
-        :style="{ '--index': idx }"
-      >
-        <slot :item="item" :index="idx"></slot>
-      </div>
-    </TransitionGroup>
     <div v-if="$slots?.footer" class="footer">
       <slot name="footer" />
     </div>
@@ -91,8 +70,6 @@ interface Props {
 defineOptions({ name: "VirtualList" })
 
 const props = defineProps<Props>()
-
-const hasListTransition = ref(true)
 
 const { data } = toRefs(props)
 const root = ref<Element | null>(null)
@@ -216,39 +193,40 @@ watch([isVirtualised, data], (value, oldValue) => {
 
 .virtual-list-scroll {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .virtual-list-item {
+  flex-shrink: 0;
   /* overflow: hidden; */
 }
 
 .virtual-list-top-marker {
+  flex-shrink: 0;
   /* transition: height 150ms; */
+}
+
+.vitual-list-bottom-marker {
+  min-height: 5px;
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
+  background-image: linear-gradient(
+    45deg,
+    #ffd900 25%,
+    #000000 25%,
+    #000000 50%,
+    #ffd900 50%,
+    #ffd900 75%,
+    #000000 75%,
+    #000000 100%
+  );
+  background-size: 40px 40px;
 }
 
 .footer {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
-}
-
-/* declare transitions */
-.fade-move,
-.fade-enter-active {
-  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
-}
-
-.fade-enter-from {
-  opacity: 0;
-  transform: scaleY(0.01) translate(30px, 0);
-}
-
-.fade-leave-to,
-.fade-leave-active {
-  opacity: 0;
-  display: none;
-}
-
-.fade-enter-active {
-  /* transition-delay: calc(50ms * var(--index)); */
 }
 </style>
